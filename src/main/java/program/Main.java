@@ -1,19 +1,57 @@
 package program;
 
+import com.github.javafaker.Faker;
+
 import java.math.BigDecimal;
 import java.sql.*;
+
 import java.util.Scanner;
+
+import static java.lang.Double.parseDouble;
 
 public class Main {
     static Scanner in=new Scanner((System.in));
     public static void main(String[] args) {
         String strConn="jdbc:mariadb://localhost:3306/vpd912";
-        insert(strConn);
+//        insert(strConn);
+//        select(strConn);
+//        update(strConn);
+//        select(strConn);
+//        delete(strConn);
+        for(int i=0;i<1000;i++)
+        {
+        autoInsert(strConn);
+        }
         select(strConn);
-        update(strConn);
-        select(strConn);
-        delete(strConn);
-        select(strConn);
+    }
+
+
+    private static void autoInsert(String strConn){
+        try(Connection con= DriverManager.getConnection(strConn,"root",""))
+        {
+            System.out.println("Connection is good");
+
+            String query="insert into `products` (`name`, `price`, `description`)"+
+                    "values (?,?,?);";
+            try(PreparedStatement ps = con.prepareStatement(query)) {
+
+                Faker productFaker = new Faker();
+
+                String name = productFaker.commerce().productName();
+               double price = parseDouble(productFaker.numerify("##.##"));
+               //double price= Double.parseDouble(productFaker.commerce().price(1.00,5000.00));
+                String description = productFaker.commerce().material();
+
+                ps.setString(1, name);
+                ps.setDouble(2, price);
+                ps.setString(3,description);
+
+                int rows=ps.executeUpdate();
+                System.out.println("update rows:"+rows);
+            }
+        } catch (Exception ex) {
+            System.out.println("Error connection");
+        }
     }
 
     private static void insert(String strConn){
@@ -28,7 +66,7 @@ public class Main {
                 System.out.print("Enter name: ");
                 name = in.nextLine();
                 System.out.print("Enter price: ");
-                price = Double.parseDouble(in.nextLine());
+                price = parseDouble(in.nextLine());
                 System.out.print("Enter description: ");
                 description = in.nextLine();
 
@@ -138,7 +176,7 @@ public class Main {
                 System.out.print("Enter price: ");
                 tmp = in.nextLine();
                 if(tmp != null && !tmp.isEmpty()) {
-                    p.setPrice(Double.parseDouble(tmp));
+                    p.setPrice(parseDouble(tmp));
                 }
                 System.out.print("Enter description: ");
                 tmp = in.nextLine();
